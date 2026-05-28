@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مساعد صانع المحتوى</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; direction: rtl; background: #f5f5f5; min-height: 100vh; }
+.header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 1rem 1.5rem; }
+.header h1 { font-size: 20px; font-weight: 500; }
+.header p { font-size: 13px; color: #6b7280; margin-top: 2px; }
+.tabs { display: flex; gap: 4px; margin-top: 12px; overflow-x: auto; }
+.tab { padding: 6px 14px; border-radius: 8px; border: 1px solid #e5e7eb; background: transparent; cursor: pointer; font-size: 14px; color: #6b7280; white-space: nowrap; font-family: sans-serif; }
+.tab.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.content { max-width: 720px; margin: 0 auto; padding: 1rem; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+input, select, textarea { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; font-family: sans-serif; background: #f9fafb; }
+.btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d1d5db; background: #f9fafb; cursor: pointer; font-size: 14px; font-family: sans-serif; }
+.btn-primary { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.btn-danger { color: #ef4444; }
+.row { display: flex; gap: 8px; align-items: center; }
+.flex-1 { flex: 1; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+.stage-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+.stage-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; border: 1px solid #e5e7eb; color: #6b7280; }
+.stage-pill.active { color: #fff; }
+.section { display: none; }
+.section.active { display: block; }
+.ai-messages { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.msg.user { background: #f3f4f6; align-self: flex-start; }
+.msg.ai { background: #7c3aed; color: #fff; align-self: flex-end; }
+.thumb-preview { border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 16px; }
+.thumb-main { font-size: 32px; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.2; }
+.thumb-sub { font-size: 16px; opacity: 0.85; margin-top: 8px; }
+.tip { font-size: 13px; color: #6b7280; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+.best-times { font-size: 14px; }
+.best-times div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+.loading { text-align: center; color: #6b7280; font-size: 13px; padding: 8px; }
+label { font-size: 13px; color: #6b7280; display: block; margin-bottom: 4px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div><h1>🎬 مساعد المحتوى</h1><p>منصتك الكاملة لتنظيم وإنتاج المحتوى</p></div>
+    <div id="stats" style="font-size:13px;color:#6b7280;background:#f3f4f6;padding:6px 12px;border-radius:8px"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">💡 الأفكار</button>
+    <button class="tab" onclick="switchTab(1)">🎬 المشاريع</button>
+    <button class="tab" onclick="switchTab(2)">📅 التقويم</button>
+    <button class="tab" onclick="switchTab(3)">🖼️ الثامبنيل</button>
+    <button class="tab" onclick="switchTab(4)">🤖 المساعد</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- الأفكار -->
+  <div class="section active" id="sec0">
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:12px">إضافة فكرة جديدة</div>
+      <div class="row" style="margin-bottom:8px">
+        <input class="flex-1" id="newIdea" placeholder="اكتب فكرتك هنا..." onkeydown="if(event.key==='Enter')addIdea()">
+        <select id="ideaPlat" style="width:auto">
+          <option>يوتيوب</option><option>إنستغرام</option><option>تيك توك</option><option>فيسبوك</option><option>تويتر</option>
+        </select>
+        <button class="btn btn-primary" onclick="addIdea()">+ إضافة</button>
+      </div>
+    </div>
+    <div id="ideasList"></div>
+  </div>
+
+  <!-- المشاريع -->
+  <div class="section" id="sec1">
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:12px">مشروع جديد</div>
+      <div class="row">
+        <input class="flex-1" id="newProj" placeholder="عنوان الفيديو..." onkeydown="if(event.key==='Enter')addProject()">
+        <select id="projPlat" style="width:auto">
+          <option>يوتيوب</option><option>إنستغرام</option><option>تيك توك</option><option>فيسبوك</option><option>تويتر</option>
+        </select>
+        <button class="btn btn-primary" onclick="addProject()">+ إضافة</button>
+      </div>
+    </div>
+    <div id="projectsList"></div>
+  </div>
+
+  <!-- التقويم -->
+  <div class="section" id="sec2">
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:12px">جدولة منشور جديد</div>
+      <div class="grid2">
+        <input id="calTitle" placeholder="عنوان المحتوى...">
+        <select id="calPlat"><option>يوتيوب</option><option>إنستغرام</option><option>تيك توك</option><option>فيسبوك</option><option>تويتر</option></select>
+        <input type="date" id="calDate">
+        <input type="time" id="calTime" value="15:00">
+      </div>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="addEvent()">+ جدولة</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:12px">⏰ أفضل أوقات النشر</div>
+      <div class="best-times">
+        <div><span style="color:#6b7280">يوتيوب</span><span>الجمعة - السبت، 2 - 4 مساءً</span></div>
+        <div><span style="color:#6b7280">إنستغرام</span><span>الثلاثاء - الخميس، 11ص - 1م</span></div>
+        <div><span style="color:#6b7280">تيك توك</span><span>يومياً، 7 - 9 مساءً</span></div>
+        <div><span style="color:#6b7280">فيسبوك</span><span>الأربعاء، 1 - 3 ظهراً</span></div>
+        <div><span style="color:#6b7280">تويتر</span><span>الإثنين - الجمعة، 9 - 10 صباحاً</span></div>
+      </div>
+    </div>
+    <div id="calendarList"></div>
+  </div>
+
+  <!-- الثامبنيل -->
+  <div class="section" id="sec3">
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:12px">🖼️ مولّد أفكار الثامبنيل</div>
+      <label>موضوع الفيديو</label>
+      <input id="thumbTopic" placeholder="مثال: أفضل 10 تطبيقات للإنتاجية...">
+      <label>الأسلوب المطلوب</label>
+      <select id="thumbStyle">
+        <option>عصري ومثير</option><option>بسيط واحترافي</option><option>ملوّن وجذاب</option><option>داكن وأنيق</option><option>مضحك وترفيهي</option>
+      </select>
+      <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="generateThumb()">✨ ولّد فكرة الثامبنيل</button>
+    </div>
+    <div id="thumbResult"></div>
+  </div>
+
+  <!-- المساعد -->
+  <div class="section" id="sec4">
+    <div class="card">
+      <div class="ai-messages" id="aiMessages">
+        <div class="msg ai">مرحباً! أنا مساعدك الذكي. أخبرني عن قناتك أو فيديوهاتك وسأساعدك في الأفكار والعناوين والهاشتاقات.</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="setAI('اقترح 5 أفكار فيديو')">اقترح 5 أفكار</button>
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="setAI('اكتب عناوين جذابة لفيديو عن الإنتاجية')">عناوين جذابة</button>
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="setAI('اقترح هاشتاقات لقناة تقنية')">هاشتاقات</button>
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="setAI('ساعدني في كتابة وصف فيديو')">وصف فيديو</button>
+      </div>
+      <div class="row">
+        <input class="flex-1" id="aiInput" placeholder="اكتب سؤالك..." onkeydown="if(event.key==='Enter')sendAI()">
+        <button class="btn btn-primary" onclick="sendAI()">إرسال</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STAGES = ["فكرة","سكريبت","تصوير","مونتاج","جاهز"];
+const COLORS = ["#a78bfa","#60a5fa","#fbbf24","#f87171","#34d399"];
+let ideas = JSON.parse(localStorage.getItem('ideas')||'[]');
+let projects = JSON.parse(localStorage.getItem('projects')||'[]');
+let calendar = JSON.parse(localStorage.getItem('cal')||'[]');
+let aiHistory = [];
+
+function save() {
+  localStorage.setItem('ideas', JSON.stringify(ideas));
+  localStorage.setItem('projects', JSON.stringify(projects));
+  localStorage.setItem('cal', JSON.stringify(calendar));
+  document.getElementById('stats').textContent = `💡 ${ideas.length} فكرة | 🎬 ${projects.length} مشروع`;
+}
+
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.section').forEach((s,j) => s.classList.toggle('active', i===j));
+}
+
+function addIdea() {
+  const t = document.getElementById('newIdea').value.trim();
+  if (!t) return;
+  ideas.push({ id: Date.now(), text: t, platform: document.getElementById('ideaPlat').value });
+  document.getElementById('newIdea').value = '';
+  save(); renderIdeas();
+}
+
+function renderIdeas() {
+  document.getElementById('ideasList').innerHTML = ideas.map(idea => `
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:15px">${idea.text}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${idea.platform}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="font-size:12px" onclick="switchTab(4);document.getElementById('aiInput').value='اقترح عناوين جذابة لفيديو عن: ${idea.text}'">🤖 عنوان</button>
+        <button class="btn btn-danger" onclick="ideas=ideas.filter(x=>x.id!=${idea.id});save();renderIdeas()">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function addProject() {
+  const t = document.getElementById('newProj').value.trim();
+  if (!t) return;
+  projects.push({ id: Date.now(), title: t, platform: document.getElementById('projPlat').value, stage: 0 });
+  document.getElementById('newProj').value = '';
+  save(); renderProjects();
+}
+
+function renderProjects() {
+  document.getElementById('projectsList').innerHTML = projects.map(p => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div><div style="font-weight:500">${p.title}</div><div style="font-size:12px;color:#6b7280">${p.platform}</div></div>
+        <button class="btn btn-danger" onclick="projects=projects.filter(x=>x.id!=${p.id});save();renderProjects()">🗑</button>
+      </div>
+      <div class="stage-bar">
+        ${STAGES.map((s,i) => `<div class="stage-pill ${i===p.stage?'active':''}" style="${i===p.stage?'background:'+COLORS[i]+';border-color:'+COLORS[i]:i<p.stage?'border-color:'+COLORS[i]+';color:'+COLORS[i]:''}">${i<p.stage?'✓ ':''}${s}</div>`).join('')}
+      </div>
+      ${p.stage < 4 ? `<button class="btn btn-primary" style="margin-top:10px;font-size:13px" onclick="advStage(${p.id})">التالي: ${STAGES[p.stage+1]} ←</button>` : '<div style="margin-top:10px;color:#34d399;font-weight:500">✅ جاهز للنشر!</div>'}
+    </div>`).join('');
+}
+
+function advStage(id) {
+  projects = projects.map(p => p.id===id && p.stage<4 ? {...p, stage: p.stage+1} : p);
+  save(); renderProjects();
+}
+
+function addEvent() {
+  const t = document.getElementById('calTitle').value.trim();
+  const d = document.getElementById('calDate').value;
+  if (!t || !d) return;
+  calendar.push({ id: Date.now(), title: t, platform: document.getElementById('calPlat').value, date: d, time: document.getElementById('calTime').value, done: false });
+  document.getElementById('calTitle').value = ''; document.getElementById('calDate').value = '';
+  save(); renderCalendar();
+}
+
+function renderCalendar() {
+  const sorted = [...calendar].sort((a,b) => a.date.localeCompare(b.date));
+  document.getElementById('calendarList').innerHTML = sorted.map(ev => `
+    <div class="card" style="opacity:${ev.done?0.6:1}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:500;text-decoration:${ev.done?'line-through':'none'}">${ev.title}</div>
+          <div style="font-size:12px;color:#6b7280">${ev.platform} • ${ev.date} • ${ev.time}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="toggleDone(${ev.id})">${ev.done?'✅':'⬜'}</button>
+          <button class="btn btn-danger" onclick="calendar=calendar.filter(x=>x.id!=${ev.id});save();renderCalendar()">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDone(id) {
+  calendar = calendar.map(e => e.id===id ? {...e, done: !e.done} : e);
+  save(); renderCalendar();
+}
+
+function setAI(txt) { document.getElementById('aiInput').value = txt; }
+
+async function sendAI() {
+  const inp = document.getElementById('aiInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const msgs = document.getElementById('aiMessages');
+  msgs.innerHTML += `<div class="msg user">${txt}</div>`;
+  aiHistory.push({ role: 'user', content: txt });
+  inp.value = '';
+  msgs.innerHTML += `<div class="msg ai loading" id="thinking">⏳ يفكر المساعد...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'أنت مساعد متخصص لصانعي المحتوى على يوتيوب ومنصات التواصل الاجتماعي. تساعد في: اقتراح أفكار فيديوهات، كتابة عناوين جذابة، اقتراح هاشتاقات، كتابة وصف المنشور، وخطط المحتوى. أجب باللغة العربية بشكل واضح ومختصر وعملي.',
+        messages: aiHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'حدث خطأ، حاول مجدداً.';
+    aiHistory.push({ role: 'assistant', content: reply });
+    document.getElementById('thinking').remove();
+    msgs.innerHTML += `<div class="msg ai">${reply}</div>`;
+  } catch(e) {
+    document.getElementById('thinking').textContent = '❌ خطأ في الاتصال، تأكد من الإنترنت.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function generateThumb() {
+  const topic = document.getElementById('thumbTopic').value.trim();
+  const style = document.getElementById('thumbStyle').value;
+  if (!topic) return;
+  const res = document.getElementById('thumbResult');
+  res.innerHTML = '<div class="card loading">⏳ جاري التوليد...</div>';
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'أنت متخصص في تصميم ثامبنيلات يوتيوب. أجب بصيغة JSON فقط بدون أي نص إضافي: {"mainText":"...","subText":"...","bg1":"#...","bg2":"#...","textColor":"#...","visual":"...","tips":["...","...","..."]}',
+        messages: [{ role: 'user', content: `موضوع الفيديو: ${topic}\nالأسلوب: ${style}` }]
+      })
+    });
+    const data = await r.json();
+    const txt = data.content?.[0]?.text || '';
+    const d = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    res.innerHTML = `
+      <div class="card">
+        <div class="thumb-preview" style="background:linear-gradient(135deg,${d.bg1},${d.bg2})">
+          <div class="thumb-main" style="color:${d.textColor}">${d.mainText}</div>
+          <div class="thumb-sub" style="color:${d.textColor}">${d.subText}</div>
+        </div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:8px">📸 ${d.visual}</div>
+        <div style="font-weight:500;margin-bottom:8px">نصائح:</div>
+        ${d.tips.map(t=>`<div class="tip">✅ ${t}</div>`).join('')}
+      </div>`;
+  } catch(e) {
+    res.innerHTML = '<div class="card" style="color:#ef4444">حدث خطأ، حاول مجدداً.</div>';
+  }
+}
+
+save(); renderIdeas(); renderProjects(); renderCalendar();
+</script>
+</body>
+</html>
